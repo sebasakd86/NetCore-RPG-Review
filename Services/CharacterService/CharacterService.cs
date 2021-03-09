@@ -62,6 +62,8 @@ namespace Net_RPG.Services
                 c.Intelligence = updatedChar.Intelligence;
                 c.Strength = updatedChar.Strength;
                 serviceResponse.Data = _mapper.Map<GetCharacterDTO>(c);
+                _context.Characters.Update(c);
+                await _context.SaveChangesAsync();
             }
             else
             {
