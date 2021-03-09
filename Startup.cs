@@ -10,7 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Net_RPG.Data;
 using Net_RPG.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Net_RPG
 {
@@ -28,6 +30,10 @@ namespace Net_RPG
         {            
             services.AddControllers();
             
+            string connStr = Configuration.GetConnectionString("DefaultConnection");
+            
+            services.AddDbContext<DataContext>(x => x.UseSqlite(connStr));
+
             services.AddAutoMapper(typeof(Startup));            
 
             services.AddScoped<ICharacterService, CharacterService>();

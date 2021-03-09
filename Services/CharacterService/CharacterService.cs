@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Net_RPG.Data;
 using Net_RPG.DTOs.Character;
 using Net_RPG.Models;
 
@@ -10,39 +12,39 @@ namespace Net_RPG.Services
     public class CharacterService : ICharacterService
     {
         private readonly IMapper _mapper;
-        public CharacterService(IMapper mapper)
+        private readonly DataContext _context;
+        public CharacterService(IMapper mapper, DataContext context)
         {
+            this._context = context;
             this._mapper = mapper;
 
         }
-        private static Character knight = new Character();
-        private static List<Character> chars = new List<Character>
-        {
-            new Character(),
-            new Character { Id = 1, Name = "Sam"}
-        };
-
         public async Task<ServiceResponse<List<GetCharacterDTO>>> AddCharacter(AddCharacterDTO newChar)
         {
             ServiceResponse<List<GetCharacterDTO>> serviceResponse = new ServiceResponse<List<GetCharacterDTO>>();
             Character oChar = _mapper.Map<Character>(newChar);
-            oChar.Id = chars.Max(c => c.Id) + 1;
-            chars.Add(oChar);
-            serviceResponse.Data = chars.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
+            int id = 1;
+            if(await _context.Characters.CountAsync() > 0)
+                id = await _context.Characters.MaxAsync(c => c.Id) + 1;
+            oChar.Id = id;
+            await _context.Characters.AddAsync(oChar);
+            await _context.SaveChangesAsync();
+            serviceResponse.Data = (await _context.Characters.ToListAsync()).Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<List<GetCharacterDTO>>> GetAllCharacters()
         {
             ServiceResponse<List<GetCharacterDTO>> serviceResponse = new ServiceResponse<List<GetCharacterDTO>>();
-            serviceResponse.Data = chars.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
+            List<Character> dbChars = await _context.Characters.ToListAsync();
+            serviceResponse.Data = _mapper.Map<List<GetCharacterDTO>>(dbChars); //dbChars.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<GetCharacterDTO>> GetCharacterById(int id)
         {
             ServiceResponse<GetCharacterDTO> serviceResponse = new ServiceResponse<GetCharacterDTO>();
-            serviceResponse.Data = _mapper.Map<GetCharacterDTO>(chars.FirstOrDefault(c => c.Id == id));
+            serviceResponse.Data = _mapper.Map<GetCharacterDTO>(await _context.Characters.FirstOrDefaultAsync(c => c.Id == id));
             return serviceResponse;
         }
 
@@ -50,15 +52,15 @@ namespace Net_RPG.Services
         {
             ServiceResponse<GetCharacterDTO> serviceResponse = new ServiceResponse<GetCharacterDTO>();
 
-            Character c = chars.FirstOrDefault(c => c.Id == updatedChar.Id);
-            if(c != null)
+            Character c = await _context.Characters.FirstOrDefaultAsync(c => c.Id == updatedChar.Id);
+            if (c != null)
             {
                 c.Name = updatedChar.Name;
                 c.Class = updatedChar.Class;
                 c.Defense = updatedChar.Defense;
                 c.HitPoints = updatedChar.HitPoints;
                 c.Intelligence = updatedChar.Intelligence;
-                c.Strength = updatedChar.Strength;                
+                c.Strength = updatedChar.Strength;
                 serviceResponse.Data = _mapper.Map<GetCharacterDTO>(c);
             }
             else
@@ -73,11 +75,12 @@ namespace Net_RPG.Services
         {
             ServiceResponse<List<GetCharacterDTO>> serviceResponse = new ServiceResponse<List<GetCharacterDTO>>();
 
-            Character c = chars.FirstOrDefault(c => c.Id == id);
-            if(c != null)
+            Character c = await _context.Characters.FirstOrDefaultAsync(c => c.Id == id);
+            if (c != null)
             {
-                chars.Remove(c);
-                serviceResponse.Data = _mapper.Map<List<GetCharacterDTO>>(chars);
+                _context.Characters.Remove(c);
+                await _context.SaveChangesAsync();
+                serviceResponse.Data = _mapper.Map<List<GetCharacterDTO>>(_context.Characters);
             }
             else
             {
