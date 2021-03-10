@@ -32,7 +32,7 @@ namespace Net_RPG.Controllers
         public async Task<IActionResult> GetAllChars(int id)
         {
             int claimId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            return Ok(await this._service.GetAllCharacters(claimId));
+            return Ok(await this._service.GetAllCharacters());
         }
         [HttpPost]
         public async Task<IActionResult> AddCharacter(AddCharacterDTO newChar)
