@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Net_RPG.Models
 {
     public class Character
@@ -11,5 +13,6 @@ namespace Net_RPG.Models
         public RPGClass Class { get; set; } = RPGClass.Knight;
         public User User {get;set;}
         public Weapon Weapon {get;set;}
+        public List<CharacterSkill> CharacterSkills { get; set; }
     }
 }

@@ -53,7 +53,11 @@ namespace Net_RPG.Services
         {
             ServiceResponse<GetCharacterDTO> serviceResponse = new ServiceResponse<GetCharacterDTO>();
             serviceResponse.Data = _mapper.Map<GetCharacterDTO>(
-                await _context.Characters.FirstOrDefaultAsync(c => c.Id == id && c.User.Id == GetUserId()));
+                await _context.Characters
+                    .Include(c => c.Weapon)
+                    .Include(c => c.CharacterSkills)
+                    .ThenInclude(cs => cs.Skills)
+                    .FirstOrDefaultAsync(c => c.Id == id && c.User.Id == GetUserId()));
             return serviceResponse;
         }
 
