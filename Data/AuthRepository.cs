@@ -1,5 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Net_RPG.Models;
 
 namespace Net_RPG.Data
@@ -7,25 +14,29 @@ namespace Net_RPG.Data
     public class AuthRepository : IAuthRepository
     {
         private readonly DataContext _context;
-        public AuthRepository(DataContext context)
+        private readonly IConfiguration _config;
+        public AuthRepository(DataContext context, IConfiguration config)
         {
+            this._config = config;
             this._context = context;
         }
         public async Task<ServiceResponse<string>> Login(string userName, string password)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             User u = await _context.Users.FirstOrDefaultAsync(u => u.UserName.ToLower() == userName.ToLower());
-            if(u == null) {
+            if (u == null)
+            {
                 response.Success = false;
                 response.Message = "User not found or password not correct.";
             }
-            else if(!VerifyPassword(password, u.PasswordHash, u.PasswordSalt))
+            else if (!VerifyPassword(password, u.PasswordHash, u.PasswordSalt))
             {
                 response.Success = false;
                 response.Message = "User not found or password not correct";
             }
-            else{
-                response.Data = u.Id.ToString();
+            else
+            {
+                response.Data = CreateToken(u);
             }
             return response;
 
@@ -35,17 +46,18 @@ namespace Net_RPG.Data
         {
             ServiceResponse<int> response = new ServiceResponse<int>(user.Id);
             CreatePasswordHash(password, out byte[] hash, out byte[] salt);
-            if( await UserExists(user.UserName)){
+            if (await UserExists(user.UserName))
+            {
                 response.Success = false;
                 response.Message = $"User {user.UserName} already exists";
                 return response;
             }
             user.PasswordHash = hash;
-            user.PasswordSalt = salt;            
+            user.PasswordSalt = salt;
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             response.Data = user.Id;
-            
+
             return response;
         }
 
@@ -56,23 +68,49 @@ namespace Net_RPG.Data
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using(var hmac = new System.Security.Cryptography.HMACSHA512())
+            using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
                 passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
         }
         private bool VerifyPassword(string password, byte[] hash, byte[] salt)
         {
-            using(var hmac = new System.Security.Cryptography.HMACSHA512(salt))
+            using (var hmac = new System.Security.Cryptography.HMACSHA512(salt))
             {
-                var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                for(int i = 0; i < compute.Length; i++){
-                    if(compute[i] != hash[i])
+                var compute = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                for (int i = 0; i < compute.Length; i++)
+                {
+                    if (compute[i] != hash[i])
                         return false;
-                }                
+                }
             }
             return true;
+        }
+        private string CreateToken(User user)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
+            SymmetricSecurityKey k = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value)
+            );
+
+            SigningCredentials creds = new SigningCredentials(k, SecurityAlgorithms.HmacSha512Signature);
+
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(1),
+                SigningCredentials = creds
+            };
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
         }
     }
 }

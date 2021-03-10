@@ -33,10 +33,10 @@ namespace Net_RPG.Services
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<GetCharacterDTO>>> GetAllCharacters()
+        public async Task<ServiceResponse<List<GetCharacterDTO>>> GetAllCharacters(int userId)
         {
             ServiceResponse<List<GetCharacterDTO>> serviceResponse = new ServiceResponse<List<GetCharacterDTO>>();
-            List<Character> dbChars = await _context.Characters.ToListAsync();
+            List<Character> dbChars = await _context.Characters.Where(c => c.User.Id == userId).ToListAsync();
             serviceResponse.Data = _mapper.Map<List<GetCharacterDTO>>(dbChars); //dbChars.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
             return serviceResponse;
         }

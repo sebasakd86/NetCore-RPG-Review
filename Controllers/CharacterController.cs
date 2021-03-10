@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Net_RPG.DTOs.Character;
 using Net_RPG.Models;
 using Net_RPG.Services;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Net_RPG.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class CharacterController : ControllerBase
@@ -24,10 +27,12 @@ namespace Net_RPG.Controllers
             // return BadRequest(knight);
             // return NotFound(knight);
         }
+        // [AllowAnonymous]
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllChars()
+        public async Task<IActionResult> GetAllChars(int id)
         {
-            return Ok(await this._service.GetAllCharacters());
+            int claimId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            return Ok(await this._service.GetAllCharacters(claimId));
         }
         [HttpPost]
         public async Task<IActionResult> AddCharacter(AddCharacterDTO newChar)

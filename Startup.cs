@@ -13,6 +13,9 @@ using Microsoft.Extensions.Logging;
 using Net_RPG.Data;
 using Net_RPG.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Net_RPG
 {
@@ -38,6 +41,17 @@ namespace Net_RPG
 
             services.AddScoped<ICharacterService, CharacterService>();
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer( opt => {
+                opt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = 
+                        new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,6 +65,8 @@ namespace Net_RPG
             // app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication(); //right here between these 2
 
             app.UseAuthorization();
 
