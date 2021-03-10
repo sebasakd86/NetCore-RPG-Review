@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Net_RPG.Data;
 
 namespace Net_RPG.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20210310002907_User")]
+    partial class User
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,12 +42,7 @@ namespace Net_RPG.Migrations
                     b.Property<int>("Strength")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Characters");
                 });
@@ -68,20 +65,6 @@ namespace Net_RPG.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Net_RPG.Models.Character", b =>
-                {
-                    b.HasOne("Net_RPG.Models.User", "User")
-                        .WithMany("Characters")
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Net_RPG.Models.User", b =>
-                {
-                    b.Navigation("Characters");
                 });
 #pragma warning restore 612, 618
         }
