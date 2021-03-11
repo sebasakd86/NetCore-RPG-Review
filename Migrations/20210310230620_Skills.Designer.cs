@@ -9,7 +9,7 @@ using Net_RPG.Data;
 namespace Net_RPG.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20210310162604_Skills")]
+    [Migration("20210310230620_Skills")]
     partial class Skills
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,13 +57,10 @@ namespace Net_RPG.Migrations
                     b.Property<int>("CharacterId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("SkillId")
+                    b.Property<int>("SkillsId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("SkillsId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("CharacterId", "SkillId");
+                    b.HasKey("CharacterId", "SkillsId");
 
                     b.HasIndex("SkillsId");
 
@@ -149,7 +146,9 @@ namespace Net_RPG.Migrations
 
                     b.HasOne("Net_RPG.Models.Skills", "Skills")
                         .WithMany("CharacterSkills")
-                        .HasForeignKey("SkillsId");
+                        .HasForeignKey("SkillsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Character");
 

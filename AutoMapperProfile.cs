@@ -1,6 +1,7 @@
 using System.Linq;
 using AutoMapper;
 using Net_RPG.DTOs.Character;
+using Net_RPG.DTOs.Fight;
 using Net_RPG.DTOs.Skill;
 using Net_RPG.DTOs.Weapon;
 using Net_RPG.Models;
@@ -18,6 +19,7 @@ namespace Net_RPG
             CreateMap<AddCharacterDTO, Character>();
             CreateMap<Weapon, GetWeaponDTO>();
             CreateMap<Skills, GetSkillDTO>();
+            CreateMap<Character, HighscoreDTO>();
         }
     }
 }

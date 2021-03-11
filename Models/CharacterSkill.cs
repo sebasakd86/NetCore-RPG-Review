@@ -5,7 +5,7 @@ namespace Net_RPG.Models
     {
         public int CharacterId { get; set; }
         public Character Character { get; set; }
-        public int SkillId { get; set; }
+        public int SkillsId { get; set; }
         public Skills Skills { get; set; }
 
 

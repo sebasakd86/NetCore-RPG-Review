@@ -25,12 +25,11 @@ namespace Net_RPG.Migrations
                 columns: table => new
                 {
                     CharacterId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SkillId = table.Column<int>(type: "INTEGER", nullable: false),
-                    SkillsId = table.Column<int>(type: "INTEGER", nullable: true)
+                    SkillsId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CharacterSkills", x => new { x.CharacterId, x.SkillId });
+                    table.PrimaryKey("PK_CharacterSkills", x => new { x.CharacterId, x.SkillsId });
                     table.ForeignKey(
                         name: "FK_CharacterSkills_Characters_CharacterId",
                         column: x => x.CharacterId,
@@ -42,7 +41,7 @@ namespace Net_RPG.Migrations
                         column: x => x.SkillsId,
                         principalTable: "Skills",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
