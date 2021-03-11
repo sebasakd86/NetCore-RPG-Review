@@ -19,6 +19,9 @@ namespace Net_RPG.Data
             //create the composite key
             modelBuilder.Entity<CharacterSkill>()
                 .HasKey(cs => new { cs.CharacterId, cs.SkillsId });
+                
+            modelBuilder.Entity<User>().Property(u => u.Role).HasDefaultValue("Player");
+            
         }
     }
 }

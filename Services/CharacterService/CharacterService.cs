@@ -26,6 +26,7 @@ namespace Net_RPG.Services
         private int GetUserId() => int.Parse(_httpContext.HttpContext.User.FindFirstValue(
             ClaimTypes.NameIdentifier)
         );
+        private string GetUserRole() => _httpContext.HttpContext.User.FindFirstValue(ClaimTypes.Role);
         public async Task<ServiceResponse<List<GetCharacterDTO>>> AddCharacter(AddCharacterDTO newChar)
         {
             ServiceResponse<List<GetCharacterDTO>> serviceResponse = new ServiceResponse<List<GetCharacterDTO>>();
@@ -44,12 +45,13 @@ namespace Net_RPG.Services
         public async Task<ServiceResponse<List<GetCharacterDTO>>> GetAllCharacters()
         {
             ServiceResponse<List<GetCharacterDTO>> serviceResponse = new ServiceResponse<List<GetCharacterDTO>>();
+            var role = GetUserRole();
             List<Character> dbChars = 
                 await _context.Characters
                     .Include(c => c.Weapon)
                     .Include(c => c.CharacterSkills)
                     .ThenInclude(cs => cs.Skills)
-                    .Where(c => c.User.Id == GetUserId()).ToListAsync();
+                    .Where(c => role == "Admin" || c.User.Id == GetUserId()).ToListAsync();
             serviceResponse.Data = _mapper.Map<List<GetCharacterDTO>>(dbChars); //dbChars.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
             return serviceResponse;
         }

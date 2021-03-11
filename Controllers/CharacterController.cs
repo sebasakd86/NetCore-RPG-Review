@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace Net_RPG.Controllers
 {
-    [Authorize]
+    // [Authorize(Roles="Player")]
+    [Authorize(Roles="Player,Admin")]
     [ApiController]
     [Route("[controller]")]
     public class CharacterController : ControllerBase
