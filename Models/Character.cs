@@ -12,6 +12,7 @@ namespace Net_RPG.Models
         public int Intelligence { get; set; } = 10;
         public RPGClass Class { get; set; } = RPGClass.Knight;
         public User User {get;set;}
+        public int UserId { get; set; } //to seed the data, we need the id not the obj
         public Weapon Weapon {get;set;}
         public List<CharacterSkill> CharacterSkills { get; set; }
         public int Fights { get; set; }

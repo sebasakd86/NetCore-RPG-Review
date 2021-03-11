@@ -45,7 +45,7 @@ namespace Net_RPG.Data
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
             ServiceResponse<int> response = new ServiceResponse<int>(user.Id);
-            CreatePasswordHash(password, out byte[] hash, out byte[] salt);
+            Utils.CreatePasswordHash(password, out byte[] hash, out byte[] salt);
             if (await UserExists(user.UserName))
             {
                 response.Success = false;
@@ -64,15 +64,6 @@ namespace Net_RPG.Data
         public async Task<bool> UserExists(string username)
         {
             return await _context.Users.AnyAsync(u => u.UserName.ToLower() == username.ToLower());
-        }
-
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using (var hmac = new System.Security.Cryptography.HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-            }
         }
         private bool VerifyPassword(string password, byte[] hash, byte[] salt)
         {

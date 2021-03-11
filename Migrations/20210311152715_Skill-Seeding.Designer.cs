@@ -9,8 +9,8 @@ using Net_RPG.Data;
 namespace Net_RPG.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20210311144955_Role-to-User")]
-    partial class RoletoUser
+    [Migration("20210311152715_Skill-Seeding")]
+    partial class SkillSeeding
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -48,7 +48,7 @@ namespace Net_RPG.Migrations
                     b.Property<int>("Strength")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Victories")
@@ -91,6 +91,26 @@ namespace Net_RPG.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Skills");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Damage = 10,
+                            Name = "Fiberall"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Damage = 25,
+                            Name = "Thunderbolt"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Damage = 50,
+                            Name = "Blizzard"
+                        });
                 });
 
             modelBuilder.Entity("Net_RPG.Models.User", b =>
@@ -106,6 +126,7 @@ namespace Net_RPG.Migrations
                         .HasColumnType("BLOB");
 
                     b.Property<string>("Role")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValue("Player");
@@ -145,7 +166,9 @@ namespace Net_RPG.Migrations
                 {
                     b.HasOne("Net_RPG.Models.User", "User")
                         .WithMany("Characters")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
